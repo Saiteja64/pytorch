@@ -83,33 +83,33 @@ foreach(INSTANCE IN LISTS FULL_LIST)
 endforeach()
 
 # add ifdefs to prevent calling stubbed out instances
-set(MHA_FILES "${CMAKE_CURRENT_SOURCE_DIR}/mha_fwd_ck.hip;${CMAKE_CURRENT_SOURCE_DIR}/mha_bwd_ck.hip;${CMAKE_CURRENT_SOURCE_DIR}/mha_varlen_fwd_ck.hip;${CMAKE_CURRENT_SOURCE_DIR}/mha_varlen_bwd_ck.hip")
-execute_process(COMMAND ls)
-message(${CMAKE_CURRENT_SOURCE_DIR})
-message(${CMAKE_CURRENT_LIST_DIR})
-foreach(MHA IN LISTS MHA_FILES)
+#set(MHA_FILES "${CMAKE_CURRENT_SOURCE_DIR}/mha_fwd_ck.hip;${CMAKE_CURRENT_SOURCE_DIR}/mha_bwd_ck.hip;${CMAKE_CURRENT_SOURCE_DIR}/mha_varlen_fwd_ck.hip;${CMAKE_CURRENT_SOURCE_DIR}/mha_varlen_bwd_ck.hip")
+#execute_process(COMMAND ls)
+#message(${CMAKE_CURRENT_SOURCE_DIR})
+#message(${CMAKE_CURRENT_LIST_DIR})
+#foreach(MHA IN LISTS MHA_FILES)
 # Ensure the file exists
-    if (EXISTS ${MHA})
-        # Use sed to modify the file in place
-        execute_process(
-            COMMAND sed -i -e "/float t = fmha/i ${HEADER}" ${MHA}
-            RESULT_VARIABLE SED_RESULT
-        )
-
-        if (NOT SED_RESULT EQUAL 0)
-            message(WARNING "Failed to modify file: ${MHA}")
-        endif()
-        execute_process(
-            COMMAND sed -i -e "/TORCH_CHECK(t >= 0/a ${FOOTER}" ${MHA}
-            RESULT_VARIABLE SED_RESULT
-        )
-        if (NOT SED_RESULT EQUAL 0)
-            message(WARNING "Failed to modify file: ${MHA}")
-        endif()
-    else()
-        message(WARNING "File ${MHA} does not exist. Skipping.")
-    endif()
-endforeach()
+#    if (EXISTS ${MHA})
+#        # Use sed to modify the file in place
+#        execute_process(
+#            COMMAND sed -i -e "/float t = fmha/i ${HEADER}" ${MHA}
+#            RESULT_VARIABLE SED_RESULT
+#        )
+#
+#        if (NOT SED_RESULT EQUAL 0)
+#            message(WARNING "Failed to modify file: ${MHA}")
+#        endif()
+#        execute_process(
+#            COMMAND sed -i -e "/TORCH_CHECK(t >= 0/a ${FOOTER}" ${MHA}
+#            RESULT_VARIABLE SED_RESULT
+#        )
+#        if (NOT SED_RESULT EQUAL 0)
+#            message(WARNING "Failed to modify file: ${MHA}")
+#        endif()
+#    else()
+#        message(WARNING "File ${MHA} does not exist. Skipping.")
+#    endif()
+#endforeach()
 
 # Change file extensions to .hip
 execute_process(COMMAND bash -c "for file in ${CMAKE_CURRENT_LIST_DIR}/*.cpp; do mv -- \"$file\" \"\${file%.cpp}.hip\"; done"
