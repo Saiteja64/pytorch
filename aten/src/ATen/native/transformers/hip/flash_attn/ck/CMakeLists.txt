@@ -38,6 +38,7 @@ endif()
 
 #Finally, parse supported CK supported archs string and add ifdefs to generated files
 set(GFX_LIST ${CK_SUPPORTED_GFX_ARCHS})
+message("ANDY")
 message("${GFX_LIST}")
 
 # Start the final string
@@ -81,8 +82,10 @@ foreach(INSTANCE IN LISTS FULL_LIST)
 endforeach()
 
 # add ifdefs to prevent calling stubbed out instances
-set(MHA_FILES "mha_fwd_ck.hip;mha_bwd_ck.hip;mha_varlen_fwd_ck.hip;mha_varlen_bwd_ck.hip")
-
+set(MHA_FILES "${CMAKE_CURRENT_SOURCE_DIR}/mha_fwd_ck.hip;${CMAKE_CURRENT_SOURCE_DIR}/mha_bwd_ck.hip;${CMAKE_CURRENT_SOURCE_DIR}/mha_varlen_fwd_ck.hip;${CMAKE_CURRENT_SOURCE_DIR}/mha_varlen_bwd_ck.hip")
+execute_process(COMMAND ls)
+message(${CMAKE_CURRENT_SOURCE_DIR})
+message(${CMAKE_CURRENT_LIST_DIR})
 foreach(MHA IN LISTS MHA_FILES)
 # Ensure the file exists
     if (EXISTS ${MHA})
