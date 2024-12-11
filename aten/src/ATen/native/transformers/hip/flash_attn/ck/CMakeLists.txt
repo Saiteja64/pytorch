@@ -36,50 +36,50 @@ if(ret AND NOT ret EQUAL 0)
 endif()
 
 
-#Finally, parse supported CK supported archs string and add ifdefs to generated files
+# Finally, parse supported CK supported archs string and add ifdefs to generated files
 set(GFX_LIST ${CK_SUPPORTED_GFX_ARCHS})
-string(REPLACE "," ";" GFX_LIST ${GFX_LIST})
 
-# Start the final string
-set(HEADER "#if (")
+if(NOT "${GFX_LIST}" STREQUAL "")
+  string(REPLACE "," ";" GFX_LIST ${GFX_LIST})
 
-foreach(SUBSTRING IN LISTS GFX_LIST)
+  # Start the final string
+  set(HEADER "#if (")
+
+  foreach(SUBSTRING IN LISTS GFX_LIST)
     # Append the condition
     set(HEADER "${HEADER}defined(__${SUBSTRING}__) || ")
-endforeach()
+  endforeach()
 
-string(REGEX REPLACE " \\|\\| $"
+  string(REGEX REPLACE " \\|\\| $"
                     ")" HEADER "${HEADER}")
 
+  set(FOOTER "#endif")
+  set(FWD_LIST "fwd_blob_list.txt")
+  set(BWD_LIST "bwd_blob_list.txt")
 
-set(FOOTER "#endif")
-set(FWD_LIST "fwd_blob_list.txt")
-set(BWD_LIST "bwd_blob_list.txt")
+  file(READ ${FWD_LIST} FWD_FILES)
+  file(READ ${BWD_LIST} BWD_FILES)
 
+  set(FULL_LIST "${FWD_FILES}\n${BWD_FILES}")
 
-file(READ ${FWD_LIST} FWD_FILES)
-file(READ ${BWD_LIST} BWD_FILES)
+  string(REPLACE "\n" ";" FULL_LIST "${FULL_LIST}")
 
-set(FULL_LIST "${FWD_FILES}\n${BWD_FILES}")
+  # Add ifdef header and footer
+  foreach(INSTANCE IN LISTS FULL_LIST)
+    if(EXISTS ${INSTANCE})
+      file(READ ${INSTANCE} CURR_FILE)
 
-string(REPLACE "\n" ";" FULL_LIST "${FULL_LIST}")
+      file(WRITE ${INSTANCE} "${HEADER}\n")
 
-# Add ifdef header and footer
-foreach(INSTANCE IN LISTS FULL_LIST)
-  if(EXISTS ${INSTANCE})
-    file(READ ${INSTANCE} CURR_FILE)
+      file(APPEND ${INSTANCE} "${CURR_FILE}")
 
-    file(WRITE ${INSTANCE} "${HEADER}\n")
+      file(APPEND ${INSTANCE} "\n${FOOTER}")
 
-    file(APPEND ${INSTANCE} "${CURR_FILE}")
-
-    file(APPEND ${INSTANCE} "\n${FOOTER}")
-
-  else()
-    message(WARNING "File ${INSTANCE} does not exist. Skipping.")
-  endif()
-endforeach()
-
+    else()
+      message(WARNING "File ${INSTANCE} does not exist. Skipping.")
+    endif()
+  endforeach()
+endif()
 # add ifdefs to prevent calling stubbed out instances
 #set(MHA_FILES "${CMAKE_CURRENT_SOURCE_DIR}/mha_fwd_ck.hip;${CMAKE_CURRENT_SOURCE_DIR}/mha_bwd_ck.hip;${CMAKE_CURRENT_SOURCE_DIR}/mha_varlen_fwd_ck.hip;${CMAKE_CURRENT_SOURCE_DIR}/mha_varlen_bwd_ck.hip")
 #execute_process(COMMAND ls)
