@@ -38,6 +38,7 @@ endif()
 
 #Finally, parse supported CK supported archs string and add ifdefs to generated files
 set(GFX_LIST ${CK_SUPPORTED_GFX_ARCHS})
+string(REPLACE "," ";" GFX_LIST ${GFX_LIST})
 message("ANDY")
 message("${GFX_LIST}")
 

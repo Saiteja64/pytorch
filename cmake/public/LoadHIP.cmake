@@ -108,7 +108,7 @@ if(HIP_FOUND)
   endif()
 
   # Declare supported archs for composable_kernel
-  set(CK_SUPPORTED_GFX_ARCHS "gfx90a;gfx940;gfx941;gfx942" CACHE STRING "GFX targets supported by CK")
+  set(CK_SUPPORTED_GFX_ARCHS "gfx90a,gfx940,gfx941,gfx942" CACHE STRING "GFX targets supported by CK")
 
   # Below we use a RegEx to find ROCM version numbers.
   # Note that CMake does not support \s for blank space. That is
