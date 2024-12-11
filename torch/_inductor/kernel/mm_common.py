@@ -2,13 +2,14 @@
 import functools
 import itertools
 import logging
-from typing import Any, cast, Dict, Sequence, Set, Tuple
+from typing import Any, cast, Dict, Sequence, Tuple
 
 import sympy
 
 import torch
 from torch._inductor.select_algorithm import realize_inputs
 from torch._inductor.virtualized import V
+from torch.utils._ordered_set import OrderedSet
 
 from .. import config as inductor_config
 from ..codegen.wrapper import PythonWrapperCodegen
@@ -21,14 +22,14 @@ log = logging.getLogger(__name__)
 
 
 def triton_config(num_stages, num_warps, **kwargs):
-    from triton import Config  # type: ignore[attr-defined]
+    from triton import Config
 
     return Config(kwargs, num_stages=num_stages, num_warps=num_warps)
 
 
 def build_rocm_gemm_configs(configs):
     rocm_num_stages = get_backend_num_stages()
-    return tuple({(c[0], c[1], c[2], rocm_num_stages, c[4]) for c in configs})
+    return tuple((c[0], c[1], c[2], rocm_num_stages, c[4]) for c in configs)
 
 
 def filtered_configs(
@@ -46,9 +47,6 @@ def filtered_configs(
     :param scale: scale factor applied to the config values
     :param exclude: whether a given config should be excluded
     """
-    from torch._inductor import config
-
-    max_mm_configs = config.test_configs.max_mm_configs
 
     min_block_size = 16
     # block_k=16 seems to be causing issues
@@ -78,7 +76,7 @@ def filtered_configs(
         ),
         min_block_size_k,
     )
-    used: Set[Any] = set()
+    used = OrderedSet[tuple[int, int, int, int, int, int]]()
     for block_m, block_n, block_k, num_stages, num_warps in configs:
         # shrink configs for small sizes
         block_m = max(min(int(block_m * scale), m), min_block_size)
@@ -105,9 +103,7 @@ def filtered_configs(
                     num_stages,
                     num_warps,
                     matrix_instr_nonkdim,
-                ) not in used and (
-                    max_mm_configs is None or len(used) < max_mm_configs
-                ):
+                ) not in used:
                     used.add(
                         (
                             block_m,
@@ -127,9 +123,7 @@ def filtered_configs(
                         matrix_instr_nonkdim=matrix_instr_nonkdim,
                     )
         else:
-            if (block_m, block_n, block_k, num_stages, num_warps, 0) not in used and (
-                max_mm_configs is None or len(used) < max_mm_configs
-            ):
+            if (block_m, block_n, block_k, num_stages, num_warps, 0) not in used:
                 used.add((block_m, block_n, block_k, num_stages, num_warps, 0))
                 yield triton_config(
                     BLOCK_M=block_m,
